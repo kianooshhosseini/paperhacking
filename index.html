@@ -1,24 +1,752 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PaperHacking Workbench — Read papers. Then do science.</title>
-    <meta name="description" content="A workbench for taking structured notes, building a personal glossary, and turning reading into synthesis. Built for researchers." />
-    <meta name="author" content="Kianoosh Hosseini" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="PaperHacking Workbench" />
-    <meta property="og:description" content="Read papers. Then do science. A workbench for structured notes, personal glossary, and synthesis." />
-    <meta property="og:image" content="./og-image.jpg" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="./og-image.jpg" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>" />
-    <script type="module" crossorigin src="./assets/index-Ca2Q96Vn.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-Dx8f6c93.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PaperHacking Workbench — Read papers. Then do science.</title>
+  <meta name="description" content="A workbench for taking structured notes, building a personal glossary, and turning reading into synthesis." />
+  <meta property="og:title" content="PaperHacking Workbench" />
+  <meta property="og:description" content="Read papers. Then do science. A workbench for structured notes, personal glossary, and synthesis." />
+  <meta property="og:image" content="./og-image.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="./og-image.jpg" />
+  <link rel="icon" href="./logo.png" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+  <style>
+    :root{--paper:#F8F9FA;--card:#FFFFFF;--ink:#1A1D21;--teal:#5B9BA0;--teal-light:#E8F4F4;--teal-dark:#4A8589;--gold:#D4A843;--gold-light:#FDF6E8;--purple:#7C5CFC;--purple-light:#F0EBFF;--green:#4CAF7A;--green-light:#E8F5E9;--text-secondary:#6B7280;--text-muted:#9CA3AF;--border:#E5E7EB}
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    ::selection{background:var(--teal);color:white}
+    ::-webkit-scrollbar{width:6px}
+    ::-webkit-scrollbar-track{background:var(--paper)}
+    ::-webkit-scrollbar-thumb{background:var(--text-muted);border-radius:3px}
+    .max-w{max-width:1200px;margin:0 auto;padding:0 24px}
+    .section{padding:96px 0}
+    .card{background:#fff;border-radius:16px;border:1px solid var(--border);box-shadow:0 2px 20px rgba(0,0,0,0.04);padding:24px}
+    .tag{display:inline-block;font-size:10px;font-weight:500;background:#F3F4F6;color:var(--text-secondary);padding:4px 10px;border-radius:999px;margin:2px}
+    .btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--teal);color:#fff;padding:16px 32px;border-radius:12px;font-weight:600;font-size:15px;border:none;cursor:pointer;transition:all .2s;text-decoration:none;box-shadow:0 4px 16px rgba(91,155,160,0.25)}
+    .btn-primary:hover{background:var(--teal-dark);transform:translateY(-2px)}
+    .btn-secondary{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--ink);padding:12px 24px;border-radius:12px;font-weight:500;font-size:14px;border:1px solid var(--border);cursor:pointer;transition:all .2s;text-decoration:none}
+    .btn-secondary:hover{background:var(--paper)}
+    .position-box{background:var(--paper);border-radius:12px;padding:12px;font-size:12px;color:var(--text-muted);border:1px solid var(--border)}
+    .license-box{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;font-size:12px;color:var(--text-muted);line-height:1.7}
+    .star-filled{fill:var(--gold);color:var(--gold)}
+    .star-empty{fill:none;color:var(--border)}
+    .reveal,.reveal-left,.reveal-right{opacity:0;transform:translateY(24px);transition:opacity .6s ease-out,transform .6s ease-out}
+    .reveal-left{transform:translateX(-40px)}
+    .reveal-right{transform:translateX(40px)}
+    .reveal.visible,.reveal-left.visible,.reveal-right.visible{opacity:1;transform:translate(0,0)}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+    .animate-float{animation:float 6s ease-in-out infinite}
+    .animate-float-fast{animation:float 4s ease-in-out infinite}
+    .noise-overlay{position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.03;mix-blend-mode:multiply;background-image:url(./noise.png);background-repeat:repeat}
+    .footer-dark{background:var(--ink);color:#fff}
+    h1{font-size:clamp(36px,6vw,72px);font-weight:800;letter-spacing:-.03em;line-height:.95}
+    h2{font-size:clamp(28px,4vw,48px);font-weight:700;letter-spacing:-.02em;line-height:1.1}
+    @media(max-width:768px){
+      .section{padding:64px 0}
+      .hide-mobile{display:none}
+      .grid-responsive{grid-template-columns:1fr!important}
+      .flex-responsive{flex-direction:column!important}
+      .w-responsive{width:100%!important}
+    }
+    @media(min-width:769px){
+      .show-desktop{display:flex!important}
+      .flex-desktop{flex-direction:row!important}
+      .w-45d{width:45%!important}
+      .w-40d{width:40%!important}
+      .w-55d{width:55%!important}
+    }
+  </style>
+</head>
+<body>
+  <div class="noise-overlay"></div>
+
+  <!-- Nav -->
+  <nav id="navbar" style="position:sticky;top:0;left:0;right:0;z-index:50;transition:all .3s;background:transparent;">
+    <div class="max-w" style="height:56px;display:flex;align-items:center;justify-content:space-between;">
+      <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;" style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:var(--ink);text-decoration:none;">
+        <img src="./logo.png" alt="" style="width:28px;height:28px;border-radius:8px;" />
+        PaperHacking
+      </a>
+      <div class="show-desktop hide-mobile" style="display:none;align-items:center;gap:32px;">
+        <a href="#features" class="nav-link" style="font-size:14px;font-weight:500;color:var(--text-secondary);text-decoration:none;">Features</a>
+        <a href="#synthesis" class="nav-link" style="font-size:14px;font-weight:500;color:var(--text-secondary);text-decoration:none;">Synthesis</a>
+        <a href="#download" class="nav-link" style="font-size:14px;font-weight:500;color:var(--text-secondary);text-decoration:none;">Download</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section style="position:relative;min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;background:var(--paper);overflow:hidden;">
+    <div style="position:absolute;inset:0;opacity:.03;background-image:radial-gradient(circle at 1px 1px,#5B9BA0 1px,transparent 0);background-size:40px 40px;"></div>
+    <div style="position:relative;z-index:10;text-align:center;padding:0 24px;max-width:640px;margin:0 auto;padding-bottom:40px;">
+
+      <div class="reveal" style="display:inline-flex;align-items:center;gap:8px;background:#fff;border-radius:999px;padding:8px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.06);border:1px solid var(--border);margin-bottom:32px;">
+        <img src="./logo.png" alt="" style="width:28px;height:28px;border-radius:8px;" />
+        <span style="font-weight:600;font-size:14px;">PaperHacking</span>
+        <span style="font-size:12px;color:var(--text-muted);">Research Workbench</span>
+      </div>
+
+      <h1 class="reveal" style="margin-bottom:24px;">Read papers.<br>Then do science.</h1>
+      <p class="reveal" style="font-size:18px;color:var(--text-secondary);max-width:520px;margin:0 auto 32px;line-height:1.6;">A workbench for taking structured notes, building a personal glossary, and turning reading into synthesis.</p>
+
+      <div class="reveal" style="margin-bottom:16px;">
+        <a href="#download" class="btn-primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download for macOS
+        </a>
+      </div>
+      <p class="reveal" style="font-size:12px;color:var(--text-muted);">Free. No account required.</p>
+
+      <!-- Stats -->
+      <div class="reveal grid-responsive" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:64px;max-width:520px;margin-left:auto;margin-right:auto;">
+        <div class="card" style="padding:16px;text-align:left;">
+          <div style="width:32px;height:32px;border-radius:8px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;margin-bottom:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B9BA0" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </div>
+          <p style="font-size:24px;font-weight:700;">12</p>
+          <p style="font-size:12px;color:var(--text-muted);">Total Papers</p>
+        </div>
+        <div class="card" style="padding:16px;text-align:left;">
+          <div style="width:32px;height:32px;border-radius:8px;background:var(--green-light);display:flex;align-items:center;justify-content:center;margin-bottom:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4CAF7A" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <p style="font-size:24px;font-weight:700;">8</p>
+          <p style="font-size:12px;color:var(--text-muted);">Completed</p>
+        </div>
+        <div class="card" style="padding:16px;text-align:left;">
+          <div style="width:32px;height:32px;border-radius:8px;background:var(--gold-light);display:flex;align-items:center;justify-content:center;margin-bottom:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4A843" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <p style="font-size:24px;font-weight:700;">4</p>
+          <p style="font-size:12px;color:var(--text-muted);">Active</p>
+        </div>
+        <div class="card" style="padding:16px;text-align:left;">
+          <div style="width:32px;height:32px;border-radius:8px;background:var(--purple-light);display:flex;align-items:center;justify-content:center;margin-bottom:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C5CFC" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <p style="font-size:24px;font-weight:700;">3</p>
+          <p style="font-size:12px;color:var(--text-muted);">Reading Plans</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scheduling -->
+  <section id="features" class="section" style="background:#fff;">
+    <div class="max-w flex-responsive" style="display:flex;align-items:flex-start;gap:48px;">
+      <div class="reveal-left w-responsive w-55d" style="max-width:600px;">
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+            <div style="width:40px;height:40px;border-radius:12px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5B9BA0" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+              <p style="font-weight:700;">Weekly Reading Plan</p>
+              <p style="font-size:12px;color:var(--text-muted);">Priority-based schedule</p>
+            </div>
+            <span style="margin-left:auto;font-weight:600;font-size:12px;color:var(--teal);background:var(--teal-light);padding:4px 12px;border-radius:999px;">Week 1</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <!-- Paper 1 -->
+            <div class="card" style="padding:16px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <span style="font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--teal);background:var(--teal-light);padding:2px 8px;border-radius:4px;">Cognitive Control</span>
+                <span style="margin-left:auto;font-size:12px;font-weight:500;color:var(--green);">Summary complete</span>
+              </div>
+              <p style="font-size:14px;font-weight:700;margin-bottom:4px;">The role of theta oscillations in cognitive flexibility and adaptive behavior</p>
+              <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">A. Researcher, B. Scientist, C. Scholar (2022)</p>
+              <div>
+                <span class="tag">theta</span><span class="tag">cognitive control</span><span class="tag">oscillations</span>
+              </div>
+            </div>
+            <!-- Paper 2 -->
+            <div class="card" style="padding:16px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <span style="font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--purple);background:var(--purple-light);padding:2px 8px;border-radius:4px;">Error Monitoring</span>
+                <span style="margin-left:auto;font-size:12px;font-weight:500;color:var(--teal);cursor:pointer;">Fill Summary</span>
+              </div>
+              <p style="font-size:14px;font-weight:700;margin-bottom:4px;">Error-related neural dynamics and cognitive control mechanisms</p>
+              <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">D. Author, E. Writer, F. Professor (2024)</p>
+              <div>
+                <span class="tag">ERN</span><span class="tag">post-error</span><span class="tag">adaptation</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Week 2 -->
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+              <div style="width:24px;height:24px;border-radius:50%;background:var(--teal);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;">2</div>
+              <span style="font-size:14px;font-weight:600;">Week 2</span>
+              <span style="margin-left:auto;font-size:12px;color:var(--text-muted);">Active</span>
+            </div>
+            <div class="card" style="padding:16px;border-style:dashed;">
+              <p style="font-size:12px;text-align:center;color:var(--text-muted);">Reward Prediction Errors and Reinforcement Learning</p>
+              <p style="font-size:14px;font-weight:700;text-align:center;margin-top:4px;">The Reward Positivity signals a prediction error</p>
+              <p style="font-size:12px;text-align:center;margin-top:4px;color:var(--text-muted);">G. Academic, H. Researcher (2025)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal-right w-responsive w-40d" style="padding-top:32px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <div style="width:32px;height:32px;border-radius:8px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B9BA0" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <span style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);">Plan</span>
+        </div>
+        <h2 style="margin-bottom:24px;">Plan → Module → Paper.</h2>
+        <p style="font-size:18px;color:var(--text-secondary);line-height:1.6;margin-bottom:24px;">Assign 1–5 star priorities. The schedule builds itself—papers distributed week by week, highest priority first.</p>
+        <div style="display:flex;align-items:center;gap:12px;font-size:14px;color:var(--text-secondary);">
+          <div style="display:flex;gap:2px;">
+            <svg class="star-filled" width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg class="star-filled" width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg class="star-filled" width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg class="star-filled" width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg class="star-empty" width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <span>Priority 4 — High</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Templates -->
+  <section class="section" style="background:var(--paper);">
+    <div class="max-w">
+      <div style="text-align:center;margin-bottom:48px;">
+        <span style="display:block;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);margin-bottom:12px;">Templates</span>
+        <h2 class="reveal" style="margin-bottom:12px;">Built-in templates. Yours to customize.</h2>
+        <p class="reveal" style="color:var(--text-secondary);animation-delay:.1s;">Start with a battle-tested structure. Then mold it to your field, your questions, your mind.</p>
+      </div>
+
+      <div class="reveal" style="max-width:520px;margin:0 auto;">
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+            <div style="width:40px;height:40px;border-radius:12px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5B9BA0" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div>
+              <span style="display:block;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);">Original Paper</span>
+              <p style="font-weight:700;">Original Paper Template</p>
+            </div>
+          </div>
+
+          <div style="margin-bottom:24px;">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:var(--paper);margin-bottom:8px;">
+              <div style="width:24px;height:24px;border-radius:6px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--teal);flex-shrink:0;">1</div>
+              <span style="font-size:14px;font-weight:500;">The Claim</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:var(--paper);margin-bottom:8px;">
+              <div style="width:24px;height:24px;border-radius:6px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--teal);flex-shrink:0;">2</div>
+              <span style="font-size:14px;font-weight:500;">My Experiment</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:var(--paper);margin-bottom:8px;">
+              <div style="width:24px;height:24px;border-radius:6px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--teal);flex-shrink:0;">3</div>
+              <span style="font-size:14px;font-weight:500;">Their Experiment</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:var(--paper);margin-bottom:8px;">
+              <div style="width:24px;height:24px;border-radius:6px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--teal);flex-shrink:0;">4</div>
+              <span style="font-size:14px;font-weight:500;">The Gap</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:var(--paper);margin-bottom:8px;">
+              <div style="width:24px;height:24px;border-radius:6px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--teal);flex-shrink:0;">5</div>
+              <span style="font-size:14px;font-weight:500;">Steal This</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:var(--paper);margin-bottom:8px;">
+              <div style="width:24px;height:24px;border-radius:6px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--teal);flex-shrink:0;">6</div>
+              <span style="font-size:14px;font-weight:500;">Schema Update</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:var(--paper);">
+              <div style="width:24px;height:24px;border-radius:6px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--teal);flex-shrink:0;">7</div>
+              <span style="font-size:14px;font-weight:500;">Current Project Bridge</span>
+            </div>
+          </div>
+
+          <div style="padding-top:16px;border-top:1px solid var(--border);">
+            <p style="font-size:12px;color:var(--text-muted);line-height:1.6;">Not seeing a field you need? Add it. Rename it. Reorder it. Every template is a starting line, not a finish line. Build the note-taking workflow that thinks the way you do.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Review teaser -->
+      <div class="reveal" style="max-width:520px;margin:24px auto 0;">
+        <div class="card" style="padding:20px;border-style:dashed;opacity:.7;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;border-radius:12px;background:var(--purple-light);display:flex;align-items:center;justify-content:center;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C5CFC" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div>
+              <span style="display:block;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--purple);">Review Paper</span>
+              <p style="font-weight:700;font-size:14px;color:var(--text-secondary);">Review Paper Template — 7 fields</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Editor -->
+  <section class="section" style="background:#fff;">
+    <div class="max-w">
+      <div style="text-align:center;margin-bottom:48px;">
+        <span style="display:block;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);margin-bottom:12px;">Editor</span>
+        <h2 class="reveal" style="margin-bottom:12px;">Side-by-side reading.</h2>
+        <p class="reveal" style="color:var(--text-secondary);animation-delay:.1s;">Notes on one side. PDF on the other. No more alt-tabbing into oblivion.</p>
+      </div>
+
+      <div class="flex-responsive" style="display:flex;gap:24px;justify-content:center;">
+        <!-- Summary -->
+        <div class="reveal-left w-responsive" style="max-width:540px;flex:1;">
+          <div class="card" style="padding:0;overflow:hidden;">
+            <div style="display:flex;align-items:center;padding:0 16px;gap:12px;height:48px;background:var(--paper);border-bottom:1px solid var(--border);">
+              <div style="display:flex;gap:6px;">
+                <div style="width:10px;height:10px;border-radius:50%;background:#EF4444;"></div>
+                <div style="width:10px;height:10px;border-radius:50%;background:#D4A843;"></div>
+                <div style="width:10px;height:10px;border-radius:50%;background:#4CAF7A;"></div>
+              </div>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B9BA0" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <span style="font-weight:600;font-size:12px;">Summary</span>
+              <span style="font-size:12px;color:var(--text-muted);">Edit</span>
+            </div>
+            <div style="padding:20px;">
+              <div style="margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+                <p style="font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:4px;">Paper Title</p>
+                <p style="font-size:14px;font-weight:700;">Error-related neural dynamics and cognitive control</p>
+                <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">A. Researcher, B. Scientist (2024)</p>
+              </div>
+              <div style="margin-bottom:16px;">
+                <span class="tag">ERN</span><span class="tag">cognitive control</span><span class="tag">adaptation</span>
+              </div>
+              <div style="margin-bottom:16px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                  <span style="font-size:14px;font-weight:600;">The Claim</span>
+                  <span style="font-size:12px;color:var(--text-muted);">What does this paper argue?</span>
+                </div>
+                <div style="padding:12px;border-radius:12px;font-size:14px;background:var(--paper);border:1px solid var(--border);">The anterior cingulate cortex monitors conflict between competing response tendencies and signals the need for increased cognitive control.</div>
+              </div>
+              <div style="margin-bottom:16px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                  <span style="font-size:14px;font-weight:600;">My Experiment</span>
+                  <span style="font-size:12px;color:var(--text-muted);">How would YOU test this?</span>
+                </div>
+                <div style="padding:12px;border-radius:12px;font-size:14px;color:var(--text-muted);background:var(--paper);border:1px solid var(--border);border-style:dashed;">Type your experiment design...</div>
+              </div>
+              <div style="padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:80px;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+                    <div style="width:25%;height:100%;background:var(--teal);border-radius:3px;"></div>
+                  </div>
+                  <span style="font-size:12px;color:var(--text-muted);">2/8 fields</span>
+                </div>
+                <span style="font-size:12px;color:var(--text-muted);">Auto-saving...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PDF -->
+        <div class="reveal-right w-responsive" style="max-width:500px;flex:1;position:relative;">
+          <div class="animate-float-fast" style="position:absolute;top:16px;right:16px;background:var(--teal);color:#fff;padding:6px 14px;border-radius:999px;font-size:11px;font-weight:700;z-index:10;box-shadow:0 4px 12px rgba(91,155,160,0.3);">PDF Viewer</div>
+          <div class="card" style="padding:0;overflow:hidden;background:var(--paper);">
+            <div style="display:flex;align-items:center;padding:0 16px;gap:12px;height:40px;border-bottom:1px solid var(--border);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span style="font-size:12px;color:var(--text-muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">error_related_neural_dynamics.pdf</span>
+              <span style="font-size:12px;color:var(--text-muted);">Page 1 of 8</span>
+            </div>
+            <div style="padding:24px;">
+              <div style="margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border);">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:8px;">Error-related neural dynamics and cognitive control</h3>
+                <p style="font-size:12px;color:var(--text-secondary);">A. Researcher, B. Scientist</p>
+                <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">Journal of Cognitive Neuroscience, 2024</p>
+              </div>
+              <div style="margin-bottom:16px;">
+                <p style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:8px;">Abstract</p>
+                <p style="font-size:12px;color:var(--text-secondary);line-height:1.6;">A number of lines of evidence suggest that the anterior cingulate cortex plays a significant role in the detection of conflict between competing response tendencies...</p>
+              </div>
+              <div style="margin-bottom:16px;padding:16px;border-radius:12px;background:#fff;border:1px solid var(--border);">
+                <p style="font-size:12px;margin-bottom:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;">Figure 1</p>
+                <div style="display:flex;align-items:flex-end;gap:8px;height:80px;">
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:40%;border-radius:4px 4px 0 0;background:var(--teal);"></div><span style="font-size:10px;color:var(--text-muted);">1</span></div>
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:65%;border-radius:4px 4px 0 0;background:var(--gold);"></div><span style="font-size:10px;color:var(--text-muted);">2</span></div>
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:35%;border-radius:4px 4px 0 0;background:var(--teal);"></div><span style="font-size:10px;color:var(--text-muted);">3</span></div>
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:70%;border-radius:4px 4px 0 0;background:var(--gold);"></div><span style="font-size:10px;color:var(--text-muted);">4</span></div>
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:45%;border-radius:4px 4px 0 0;background:var(--teal);"></div><span style="font-size:10px;color:var(--text-muted);">5</span></div>
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:80%;border-radius:4px 4px 0 0;background:var(--gold);"></div><span style="font-size:10px;color:var(--text-muted);">6</span></div>
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:55%;border-radius:4px 4px 0 0;background:var(--teal);"></div><span style="font-size:10px;color:var(--text-muted);">7</span></div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:12px;border-radius:12px;background:var(--green-light);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4CAF7A" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <span style="font-size:12px;font-weight:500;color:var(--green);">Note saved automatically</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Synthesis -->
+  <section id="synthesis" class="section" style="background:var(--paper);">
+    <div class="max-w flex-responsive" style="display:flex;align-items:flex-start;gap:48px;">
+      <div class="reveal-left w-responsive w-40d" style="padding-top:32px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <div style="width:32px;height:32px;border-radius:8px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B9BA0" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <span style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);">Synthesis</span>
+        </div>
+        <h2 style="margin-bottom:24px;">Turn notes into arguments.</h2>
+        <p style="font-size:18px;color:var(--text-secondary);line-height:1.6;margin-bottom:24px;">Auto-extract claims, detect contradictions, and map the debate across papers—then export your synthesis as Markdown.</p>
+      </div>
+
+      <div class="reveal-right w-responsive w-55d" style="max-width:600px;">
+        <div class="card" style="padding:0;overflow:hidden;">
+          <!-- Tabs -->
+          <div style="display:flex;align-items:center;padding:0 12px;gap:4px;height:44px;background:var(--paper);border-bottom:1px solid var(--border);overflow-x:auto;">
+            <span style="padding:4px 12px;border-radius:8px;font-size:11px;font-weight:600;white-space:nowrap;color:var(--text-secondary);">Overview</span>
+            <span style="padding:4px 12px;border-radius:8px;font-size:11px;font-weight:600;white-space:nowrap;color:var(--text-secondary);">Papers</span>
+            <span style="padding:4px 12px;border-radius:8px;font-size:11px;font-weight:600;white-space:nowrap;color:var(--text-secondary);">Consensus</span>
+            <span style="padding:4px 12px;border-radius:8px;font-size:11px;font-weight:600;white-space:nowrap;background:var(--teal);color:#fff;display:flex;align-items:center;gap:4px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Contested
+            </span>
+            <span style="padding:4px 12px;border-radius:8px;font-size:11px;font-weight:600;white-space:nowrap;color:var(--text-secondary);">Gaps</span>
+            <span style="padding:4px 12px;border-radius:8px;font-size:11px;font-weight:600;white-space:nowrap;color:var(--text-secondary);">Themes</span>
+          </div>
+
+          <div style="padding:20px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B9BA0" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <span style="font-size:14px;font-weight:700;">Cognitive Control</span>
+            </div>
+            <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;margin-left:24px;">1/7 sections</p>
+
+            <div style="margin-bottom:20px;">
+              <h4 style="font-size:14px;font-weight:700;margin-bottom:4px;">Contested Points</h4>
+              <p style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">What is actively debated? Map out the positions and which papers support each side.</p>
+
+              <div class="card" style="padding:16px;">
+                <p style="font-size:14px;font-weight:600;margin-bottom:16px;">Is the ACC a conflict monitor or a learning signal?</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                  <div>
+                    <p style="font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:8px;">Position A</p>
+                    <div class="position-box">Conflict monitoring theory...</div>
+                  </div>
+                  <div>
+                    <p style="font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:8px;">Position B</p>
+                    <div class="position-box">Reinforcement learning theory...</div>
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                  <div>
+                    <p style="font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:8px;">Supporting Papers</p>
+                    <div><span class="tag">Paper 1</span><span class="tag">Paper 2</span></div>
+                  </div>
+                  <div>
+                    <p style="font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:8px;">Supporting Papers</p>
+                    <div><span class="tag">Paper 3</span><span class="tag">Paper 4</span></div>
+                  </div>
+                </div>
+                <div class="position-box" style="border-style:dashed;">Your note on this debate — who do you think is right? Why?</div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div style="padding:16px;border-radius:12px;background:var(--teal-light);">
+                <p style="font-size:14px;font-weight:700;">3 Claims Found</p>
+                <p style="font-size:12px;color:var(--text-secondary);">From paper summaries</p>
+              </div>
+              <div style="padding:16px;border-radius:12px;background:var(--purple-light);">
+                <p style="font-size:14px;font-weight:700;">2 Gaps Found</p>
+                <p style="font-size:12px;color:var(--text-secondary);">From paper summaries</p>
+              </div>
+              <div style="padding:16px;border-radius:12px;background:var(--gold-light);">
+                <p style="font-size:14px;font-weight:700;">1 Contradiction</p>
+                <p style="font-size:12px;color:var(--text-secondary);">Auto-detected</p>
+              </div>
+              <div style="padding:16px;border-radius:12px;background:var(--green-light);">
+                <p style="font-size:14px;font-weight:700;">3 Schema Updates</p>
+                <p style="font-size:12px;color:var(--text-secondary);">Mental model changes</p>
+              </div>
+            </div>
+
+            <button style="width:100%;margin-top:16px;padding:12px;border-radius:12px;font-size:14px;font-weight:500;color:var(--text-secondary);background:transparent;border:1px dashed var(--border);cursor:pointer;">+ Add Contested Point</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Terms & Gamification -->
+  <section class="section" style="background:#fff;">
+    <div class="max-w">
+      <div style="text-align:center;margin-bottom:48px;">
+        <span style="display:block;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);margin-bottom:12px;">Knowledge</span>
+        <h2 class="reveal" style="margin-bottom:12px;">Build a language. Keep the streak.</h2>
+        <p class="reveal" style="color:var(--text-secondary);animation-delay:.1s;">Every paper adds words to your personal research vocabulary.</p>
+      </div>
+
+      <div class="flex-responsive" style="display:flex;gap:32px;justify-content:center;">
+        <!-- Terms -->
+        <div class="reveal-left w-responsive" style="max-width:480px;flex:1;">
+          <div class="card">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+              <div style="width:40px;height:40px;border-radius:12px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5B9BA0" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              </div>
+              <div>
+                <span style="display:block;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);">Glossary</span>
+                <p style="font-weight:700;">Terms & Concepts</p>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:var(--paper);margin-bottom:8px;cursor:default;">
+              <div style="width:32px;height:32px;border-radius:8px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B9BA0" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              </div>
+              <div style="min-width:0;">
+                <p style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Conflict adaptation</p>
+                <p style="font-size:12px;color:var(--text-muted);">From 3 papers</p>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:var(--paper);margin-bottom:8px;cursor:default;">
+              <div style="width:32px;height:32px;border-radius:8px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B9BA0" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              </div>
+              <div style="min-width:0;">
+                <p style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Anterior Cingulate Cortex</p>
+                <p style="font-size:12px;color:var(--text-muted);">From 3 papers</p>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:var(--paper);margin-bottom:8px;cursor:default;">
+              <div style="width:32px;height:32px;border-radius:8px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B9BA0" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              </div>
+              <div style="min-width:0;">
+                <p style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Theta oscillations</p>
+                <p style="font-size:12px;color:var(--text-muted);">From 2 papers</p>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:var(--paper);margin-bottom:8px;cursor:default;">
+              <div style="width:32px;height:32px;border-radius:8px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B9BA0" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              </div>
+              <div style="min-width:0;">
+                <p style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Reactive control</p>
+                <p style="font-size:12px;color:var(--text-muted);">From 4 papers</p>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:var(--paper);cursor:default;">
+              <div style="width:32px;height:32px;border-radius:8px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B9BA0" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              </div>
+              <div style="min-width:0;">
+                <p style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Proactive control</p>
+                <p style="font-size:12px;color:var(--text-muted);">From 2 papers</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gamification -->
+        <div class="reveal-right w-responsive" style="max-width:480px;flex:1;">
+          <!-- Score Card -->
+          <div style="margin-bottom:16px;padding:20px;border-radius:16px;color:#fff;background:linear-gradient(135deg,var(--teal),var(--teal-dark));box-shadow:0 8px 32px rgba(91,155,160,0.25);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <span style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,0.7);font-weight:600;">Total Score</span>
+              <div style="width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+            </div>
+            <p style="font-size:36px;font-weight:700;margin-bottom:4px;">450</p>
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;color:rgba(255,255,255,0.7);">
+              <span>Next milestone: 10 papers</span>
+              <span>4/10</span>
+            </div>
+            <div style="width:100%;height:6px;background:rgba(255,255,255,0.15);border-radius:3px;overflow:hidden;margin-top:8px;">
+              <div style="width:40%;height:100%;background:#fff;border-radius:3px;"></div>
+            </div>
+          </div>
+
+          <!-- Streak -->
+          <div class="card">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+              <div style="padding:16px;border-radius:12px;background:var(--paper);">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D4A843" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.5.5-3 1.5-4.5"/></svg>
+                  <span style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;font-weight:600;color:var(--text-muted);">Current</span>
+                </div>
+                <p style="font-size:20px;font-weight:700;color:var(--gold);">4 weeks</p>
+              </div>
+              <div style="padding:16px;border-radius:12px;background:var(--paper);">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7C5CFC" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                  <span style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;font-weight:600;color:var(--text-muted);">Longest</span>
+                </div>
+                <p style="font-size:20px;font-weight:700;color:var(--purple);">4 weeks</p>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+              <div style="padding:12px;border-radius:12px;background:var(--paper);display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                  <span style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;font-weight:600;color:var(--text-muted);">On Time</span>
+                  <p style="font-size:18px;font-weight:700;color:var(--green);">4</p>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4CAF7A" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              </div>
+              <div style="padding:12px;border-radius:12px;background:var(--paper);display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                  <span style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;font-weight:600;color:var(--text-muted);">Late</span>
+                  <p style="font-size:18px;font-weight:700;color:var(--text-muted);">0</p>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+            </div>
+
+            <div style="padding:16px;border-radius:12px;background:var(--teal-light);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                <span style="font-size:14px;font-weight:600;">Weekly Target</span>
+                <span style="font-size:14px;font-weight:700;color:var(--teal);">2 papers</span>
+              </div>
+              <p style="font-size:12px;color:var(--text-secondary);">Reading 2 papers/week earns +100 points each. Streaks of 3+ weeks earn +25 bonus!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Offline -->
+  <section class="section" style="background:var(--paper);">
+    <div class="max-w">
+      <div style="text-align:center;margin-bottom:48px;">
+        <span style="display:block;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);margin-bottom:12px;">Privacy</span>
+        <h2 class="reveal" style="margin-bottom:16px;">Your work. Your machine.<br>No cloud required.</h2>
+        <p class="reveal" style="font-size:18px;color:var(--text-secondary);max-width:640px;margin:0 auto;line-height:1.6;animation-delay:.1s;">Folder-based storage, automatic migration, and import/export—sync via Dropbox / iCloud / Drive if you want.</p>
+      </div>
+
+      <div class="reveal grid-responsive" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:900px;margin:0 auto 64px;">
+        <div class="card" style="cursor:default;">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5B9BA0" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          </div>
+          <p style="font-weight:700;margin-bottom:8px;">Auto-save</p>
+          <p style="font-size:14px;color:var(--text-secondary);line-height:1.5;">Every keystroke is saved locally with debounced writes.</p>
+        </div>
+        <div class="card" style="cursor:default;">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5B9BA0" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <p style="font-weight:700;margin-bottom:8px;">Folder storage</p>
+          <p style="font-size:14px;color:var(--text-secondary);line-height:1.5;">PDFs and images stored as files. Lean JSON metadata.</p>
+        </div>
+        <div class="card" style="cursor:default;">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5B9BA0" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+          </div>
+          <p style="font-weight:700;margin-bottom:8px;">Import & export</p>
+          <p style="font-size:14px;color:var(--text-secondary);line-height:1.5;">Bring your data to a new Mac in seconds.</p>
+        </div>
+      </div>
+
+      <div class="reveal card" style="max-width:600px;margin:0 auto;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5B9BA0" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span style="font-weight:600;font-size:14px;font-family:monospace;">paperhacking_data/</span>
+        </div>
+        <div style="margin-left:28px;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;"><div style="width:6px;height:6px;border-radius:50%;background:var(--teal);"></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><span style="font-size:12px;font-family:monospace;color:var(--text-secondary);">pdfs/</span></div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;"><div style="width:6px;height:6px;border-radius:50%;background:var(--teal);"></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><span style="font-size:12px;font-family:monospace;color:var(--text-secondary);">images/</span></div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;"><div style="width:6px;height:6px;border-radius:50%;background:var(--teal);"></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span style="font-size:12px;font-family:monospace;color:var(--text-secondary);">data.json</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="download" class="footer-dark section" style="position:relative;">
+    <div style="position:absolute;inset:0;opacity:.02;background-image:radial-gradient(circle at 1px 1px,#5B9BA0 1px,transparent 0);background-size:40px 40px;"></div>
+    <div class="max-w" style="position:relative;text-align:center;">
+
+      <div class="reveal" style="display:inline-flex;align-items:center;gap:8px;margin-bottom:32px;background:rgba(255,255,255,0.05);border-radius:999px;padding:8px 16px;border:1px solid rgba(255,255,255,0.1);">
+        <img src="./logo.png" alt="" style="width:24px;height:24px;border-radius:6px;" />
+        <span style="font-weight:600;font-size:14px;color:#fff;">PaperHacking</span>
+        <span style="font-size:12px;color:var(--text-muted);">Research Workbench</span>
+      </div>
+
+      <h2 class="reveal" style="color:#fff;margin-bottom:16px;animation-delay:.1s;">Ready to read with intention?</h2>
+      <p class="reveal" style="color:var(--text-muted);max-width:560px;margin:0 auto 32px;line-height:1.6;animation-delay:.2s;">
+        Whether you're an undergrad wrestling with your first review paper, a PhD student mapping an entire field, or a lifelong learner who never stops asking questions — this was built for you.
+      </p>
+
+      <div class="reveal" style="margin-bottom:32px;animation-delay:.3s;">
+        <a href="https://github.com/kianooshhosseini/paperhacking/releases" target="_blank" class="btn-primary" style="font-size:16px;padding:18px 36px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download for macOS
+        </a>
+      </div>
+
+      <!-- Email contact -->
+      <div class="reveal" style="margin-bottom:32px;animation-delay:.35s;">
+        <p style="font-size:14px;color:var(--text-muted);margin-bottom:12px;">Found a bug? Have an idea? Just want to say hi?</p>
+        <span id="email-btn" class="btn-secondary" style="cursor:pointer;" onclick="this.href='mailto:'+String.fromCharCode(98,108,117,101,109,97,110,57,52)+String.fromCharCode(64,100,117,99,107,46,99,111,109)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <span id="email-text">Send me a message</span>
+        </span>
+      </div>
+
+      <!-- Links -->
+      <div class="reveal" style="display:flex;align-items:center;justify-content:center;gap:24px;font-size:14px;color:var(--text-muted);margin-bottom:48px;animation-delay:.4s;">
+        <a href="https://kianoosh.info" target="_blank" style="color:var(--text-muted);text-decoration:none;transition:color .2s;" onmouseenter="this.style.color='#fff'" onmouseleave="this.style.color='var(--text-muted)'">Kianoosh.info</a>
+        <span style="color:rgba(255,255,255,0.15);">•</span>
+        <a href="https://twitter.com/kiahosseini" target="_blank" style="color:var(--text-muted);text-decoration:none;transition:color .2s;" onmouseenter="this.style.color='#fff'" onmouseleave="this.style.color='var(--text-muted)'">@kiahosseini</a>
+      </div>
+
+      <!-- License -->
+      <div class="reveal" style="margin-bottom:32px;animation-delay:.45s;">
+        <div class="license-box" style="max-width:560px;margin:0 auto;text-align:left;">
+          <p style="font-weight:600;margin-bottom:8px;color:rgba(255,255,255,0.6);">License — Free for Personal & Educational Use</p>
+          <p>PaperHacking Workbench is free to download and use for personal, academic, and educational purposes. You may not sell, redistribute, modify, or create derivative works from this software. All rights reserved by Kianoosh Hosseini.</p>
+        </div>
+      </div>
+
+      <div style="padding-top:32px;border-top:1px solid rgba(255,255,255,0.08);">
+        <p style="font-size:12px;color:var(--text-muted);">© Kianoosh Hosseini • Built for curious minds</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    },{threshold:0.15,rootMargin:'0px 0px -50px 0px'});
+    document.querySelectorAll('.reveal,.reveal-left,.reveal-right').forEach(function(el){observer.observe(el);});
+
+    // Navbar scroll
+    var navbar = document.getElementById('navbar');
+    window.addEventListener('scroll',function(){
+      if(window.scrollY > 80){
+        navbar.style.background='rgba(255,255,255,0.92)';
+        navbar.style.backdropFilter='blur(12px)';
+        navbar.style.borderBottom='1px solid var(--border)';
+        navbar.style.boxShadow='0 1px 4px rgba(0,0,0,0.04)';
+      }else{
+        navbar.style.background='transparent';
+        navbar.style.backdropFilter='none';
+        navbar.style.borderBottom='none';
+        navbar.style.boxShadow='none';
+      }
+    },{passive:true});
+  </script>
+</body>
 </html>
